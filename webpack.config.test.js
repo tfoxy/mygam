@@ -1,5 +1,4 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const babelOptions = require('./.babelrc.json');
 
 module.exports = {
@@ -16,11 +15,9 @@ module.exports = {
         loader: 'babel-loader',
         options: babelOptions,
       },
+    }, {
+      test: /.css$/,
+      use: 'null-loader',
     }],
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      title: 'mygam',
-    }),
-  ],
 };

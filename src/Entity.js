@@ -1,22 +1,20 @@
 /* global document */
+import { ZERO_POS, NO_POSITION } from './positions';
 
-import { ZERO_POS } from './positions';
 
-const PI2 = Math.PI / 2;
 
 let nextId = 0;
-
 export default class Entity {
+
   constructor(options) {
     nextId += 1;
     this.id = nextId;
-    this.color = 'green';
+    this.color = 'gray';
     this.size = { x: 35, y: 25 };
-    this.position = { x: 50, y: 50 };
-    this.speed = ZERO_POS;
-    this.acceleration = 0;
+    this.position = NO_POSITION;
     this.angle = 0;
-    this.angularSpeed = 0;
+    this.resetMomentum();
+    this.acceleration = 0;
     this.angularAcceleration = 0;
     this.maxSpeed = 600;
     this.maxAcceleration = 5;
@@ -25,13 +23,38 @@ export default class Entity {
     Object.assign(this, options);
   }
 
+  resetMomentum() {
+    this.speed = ZERO_POS;
+    this.angularSpeed = 0;
+  }
+
   changeAcceleration(radius, angle) {
     this.acceleration = radius * this.maxAcceleration;
     this.angularAcceleration = angle * this.maxAngularAcceleration;
   }
 
-  get squarePoints() {
+  getSquarePointsInsideGame(width, height) {
     const { x: xPos, y: yPos } = this.position;
+    let xOffset = width;
+    let yOffset = width;
+    if (xPos > width / 2) {
+      xOffset *= -1;
+    }
+    if (yPos > height / 2) {
+      yOffset *= -1;
+    }
+    const squarePoints = this.squarePoints;
+    const points = [
+      squarePoints,
+      squarePoints.map(p => ({ x: p.x + xOffset, y: p.y })),
+      squarePoints.map(p => ({ x: p.x, y: p.y + yOffset })),
+      squarePoints.map(p => ({ x: p.x + xOffset, y: p.y + yOffset })),
+    ];
+    return points;
+  }
+
+  _getSquarePoints(position) {
+    const { x: xPos, y: yPos } = position;
     const { x: xSize, y: ySize } = this.size;
     const angle = this.angle;
     const pointDistance = Math.sqrt((xSize * xSize) + (ySize * ySize)) / 2;
@@ -43,12 +66,16 @@ export default class Entity {
       x: xPos + (Math.cos(angle + pointAngle) * pointDistance),
       y: yPos + (Math.sin(angle + pointAngle) * pointDistance),
     }, {
-      x: xPos + (Math.cos(angle + pointAngle + PI2) * pointDistance),
-      y: yPos + (Math.sin(angle + pointAngle + PI2) * pointDistance),
+      x: xPos + (Math.cos(angle + (Math.PI - pointAngle)) * pointDistance),
+      y: yPos + (Math.sin(angle + (Math.PI - pointAngle)) * pointDistance),
     }, {
-      x: xPos + (Math.cos(angle - pointAngle - PI2) * pointDistance),
-      y: yPos + (Math.sin(angle - pointAngle - PI2) * pointDistance),
+      x: xPos + (Math.cos(angle - (Math.PI - pointAngle)) * pointDistance),
+      y: yPos + (Math.sin(angle - (Math.PI - pointAngle)) * pointDistance),
     }];
+  }
+
+  get squarePoints() {
+    return this._getSquarePoints(this.position);
   }
 
   get canvas() {

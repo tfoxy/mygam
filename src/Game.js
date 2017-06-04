@@ -1,3 +1,6 @@
+import { Vector, Polygon, testPolygonPolygon } from 'sat';
+import Entity from './Entity';
+
 const PI2 = 2 * Math.PI;
 
 export default class Game {
@@ -7,10 +10,13 @@ export default class Game {
     this.loopInterval = 1000 / this.tickrate;
     this.width = 640;
     this.height = 640;
+    this.player1Entity = new Entity({ color: 'green' });
+    this.player2Entity = new Entity({ color: 'red' });
   }
 
   start() {
     if (this.loop !== Game.prototype.loop) throw new Error('Game already started');
+    this.startRound();
     this.loop = this.loop.bind(this);
     this.loop();
   }
@@ -19,9 +25,54 @@ export default class Game {
     this.entities.forEach((entity) => {
       this.accelerateEntity(entity);
       this.moveEntity(entity);
-      // console.log(entity.position, entity.angle);
     });
+    this.checkCollisions();
     setTimeout(this.loop, this.loopInterval);
+  }
+
+  startRound() {
+    this.entities.length = 0;
+    this.player1Entity.resetMomentum();
+    this.player2Entity.resetMomentum();
+    Object.assign(this.player1Entity, {
+      position: { x: 50, y: 50 },
+      angle: 0,
+    });
+    Object.assign(this.player2Entity, {
+      position: { x: this.width - 50, y: this.height - 50 },
+      angle: Math.PI,
+    });
+    this.entities.push(this.player1Entity);
+    this.entities.push(this.player2Entity);
+  }
+
+  checkCollisions() {
+    this.entities.forEach((entity, index) => {
+      const polygonList = this.getEntitySatPolygonList(entity);
+      const collisionEntity = this.entities.slice(index + 1).find(
+        anotherEntity => this.testCollision(
+          polygonList,
+          this.getEntitySatPolygonList(anotherEntity),
+        ),
+      );
+      if (collisionEntity) {
+        this.startRound();
+      }
+    });
+  }
+
+  getEntitySatPolygonList(entity) {
+    return entity.getSquarePointsInsideGame(this.width, this.height).map(
+      points => new Polygon(undefined, points.map(p => new Vector(p.x, p.y))),
+    );
+  }
+
+  testCollision(polygonList, anotherPolygonList) {
+    return polygonList.some(
+      polygon => anotherPolygonList.some(
+        anotherPolygon => testPolygonPolygon(polygon, anotherPolygon),
+      ),
+    );
   }
 
   moveEntity(entity) {
