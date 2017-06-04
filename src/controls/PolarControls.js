@@ -17,8 +17,15 @@ const MOVE_MAP = {
   XX: NONE_MOVE,
 };
 
-export default class CoordinatesControls {
-  constructor() {
+const DEFAULT_KEY_BINDINGS = {
+  FORWARD: 'ArrowUp',
+  LEFT: 'ArrowLeft',
+  RIGHT: 'ArrowRight',
+};
+
+export default class PolarControls {
+  constructor(keyBindings = DEFAULT_KEY_BINDINGS) {
+    this.keyBindings = keyBindings;
     this.entity = null;
     this.currentKeys = [];
     this.currentKeySet = new Set();
@@ -46,15 +53,20 @@ export default class CoordinatesControls {
   }
 
   updateCurrentDirection() {
+    const {
+      FORWARD: forwardKey,
+      LEFT: leftKey,
+      RIGHT: rightKey,
+    } = this.keyBindings;
     let moveRadius = 'X';
     let moveAngle = 'X';
     this.currentKeys.forEach((key) => {
       // eslint-disable-next-line default-case
       switch (key) {
-        case 'ArrowUp': moveRadius = 'F'; break;
+        case forwardKey: moveRadius = 'F'; break;
         // case 'ArrowDown': moveRadius = 'B'; break;
-        case 'ArrowLeft': moveAngle = 'L'; break;
-        case 'ArrowRight': moveAngle = 'R'; break;
+        case leftKey: moveAngle = 'L'; break;
+        case rightKey: moveAngle = 'R'; break;
       }
     });
     const direction = MOVE_MAP[moveRadius + moveAngle];

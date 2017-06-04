@@ -7,7 +7,7 @@ const PI2 = Math.PI / 2;
 let nextId = 0;
 
 export default class Entity {
-  constructor() {
+  constructor(options) {
     nextId += 1;
     this.id = nextId;
     this.color = 'green';
@@ -22,6 +22,7 @@ export default class Entity {
     this.maxAcceleration = 5;
     this.maxAngularSpeed = Math.PI * (3 / 2);
     this.maxAngularAcceleration = Math.PI / 24;
+    Object.assign(this, options);
   }
 
   changeAcceleration(radius, angle) {
