@@ -1,45 +1,28 @@
 /* global window */
-import {
-  ZERO_POS,
-} from '../positions';
-
 const SQRT2 = 1 / Math.sqrt(2);
-
-const UP = { x: 0, y: -1 };
-const DOWN = { x: 0, y: 1 };
-const LEFT = { x: -1, y: 0 };
-const RIGHT = { x: 1, y: 0 };
-const UP_LEFT = { x: -SQRT2, y: -SQRT2 };
-const UP_RIGHT = { x: SQRT2, y: -SQRT2 };
-const DOWN_LEFT = { x: -SQRT2, y: SQRT2 };
-const DOWN_RIGHT = { x: SQRT2, y: SQRT2 };
+const NONE_MOVE = { r: 0, a: 0 };
 
 /*
-  N: North
-  S: South
-  W: West
-  E: East
+  F: Forward
+  L: Left
+  R: Right
   X: None of the above (idle)
  */
 const MOVE_MAP = {
-  NX: UP,
-  SX: DOWN,
-  XW: LEFT,
-  XE: RIGHT,
-  NW: UP_LEFT,
-  NE: UP_RIGHT,
-  SW: DOWN_LEFT,
-  SE: DOWN_RIGHT,
-  XX: ZERO_POS,
+  FX: { r: 1, a: 0 },
+  XL: { r: 0, a: -1 },
+  XR: { r: 0, a: 1 },
+  FL: { r: SQRT2, a: -SQRT2 },
+  FR: { r: SQRT2, a: SQRT2 },
+  XX: NONE_MOVE,
 };
 
 export default class CoordinatesControls {
-  constructor(game) {
-    this.game = game;
+  constructor() {
     this.entity = null;
     this.currentKeys = [];
     this.currentKeySet = new Set();
-    this.currentDirection = ZERO_POS;
+    this.currentDirection = NONE_MOVE;
     this.keyboardListener = this.keyboardListener.bind(this);
   }
 
@@ -63,23 +46,19 @@ export default class CoordinatesControls {
   }
 
   updateCurrentDirection() {
-    let moveX = 'X';
-    let moveY = 'X';
+    let moveRadius = 'X';
+    let moveAngle = 'X';
     this.currentKeys.forEach((key) => {
       // eslint-disable-next-line default-case
       switch (key) {
-        case 'ArrowUp': moveY = 'N'; break;
-        case 'ArrowDown': moveY = 'S'; break;
-        case 'ArrowLeft': moveX = 'W'; break;
-        case 'ArrowRight': moveX = 'E'; break;
+        case 'ArrowUp': moveRadius = 'F'; break;
+        // case 'ArrowDown': moveRadius = 'B'; break;
+        case 'ArrowLeft': moveAngle = 'L'; break;
+        case 'ArrowRight': moveAngle = 'R'; break;
       }
     });
-    const direction = MOVE_MAP[moveY + moveX];
+    const direction = MOVE_MAP[moveRadius + moveAngle];
     this.currentDirection = direction;
-    const accelerationValue = this.entity.accelerationModule / this.game.tickrate;
-    this.entity.acceleration = {
-      x: (direction.x * accelerationValue),
-      y: (direction.y * accelerationValue),
-    };
+    this.entity.changeAcceleration(direction.r, direction.a);
   }
 }

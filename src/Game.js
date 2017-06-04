@@ -1,3 +1,5 @@
+const PI2 = 2 * Math.PI;
+
 export default class Game {
   constructor() {
     this.entities = [];
@@ -17,12 +19,19 @@ export default class Game {
     this.entities.forEach((entity) => {
       this.accelerateEntity(entity);
       this.moveEntity(entity);
+      // console.log(entity.position, entity.angle);
     });
     setTimeout(this.loop, this.loopInterval);
   }
 
   moveEntity(entity) {
-    const speed = entity.speed;
+    const { speed, angularSpeed } = entity;
+    if (angularSpeed) {
+      let angle = entity.angle;
+      angle += entity.angularSpeed;
+      angle %= PI2;
+      entity.angle = angle;
+    }
     if (speed.x || speed.y) {
       const pos = entity.position;
       let x = (pos.x + speed.x) % this.width;
@@ -34,11 +43,23 @@ export default class Game {
   }
 
   accelerateEntity(entity) {
-    const acceleration = entity.acceleration;
-    if (acceleration.x || acceleration.y) {
-      const speed = entity.speed;
-      let x = (speed.x + acceleration.x);
-      let y = (speed.y + acceleration.y);
+    const { acceleration, angularAcceleration } = entity;
+    if (angularAcceleration) {
+      const tickAngularAcceleration = angularAcceleration / this.tickrate;
+      let angularSpeed = entity.angularSpeed + tickAngularAcceleration;
+      const maxAngularSpeed = entity.maxAngularSpeed / this.tickrate;
+      if (angularSpeed > maxAngularSpeed) {
+        angularSpeed = maxAngularSpeed;
+      } else if (angularSpeed < -maxAngularSpeed) {
+        angularSpeed = -maxAngularSpeed;
+      }
+      entity.angularSpeed = angularSpeed;
+    }
+    if (acceleration) {
+      const tickAcceleration = acceleration / this.tickrate;
+      const { speed, angle } = entity;
+      let x = speed.x + (Math.cos(angle) * tickAcceleration);
+      let y = speed.y + (Math.sin(angle) * tickAcceleration);
       const speedModule = Math.sqrt((x * x) + (y * y));
       const maxSpeed = entity.maxSpeed / this.tickrate;
       if (speedModule > maxSpeed) {

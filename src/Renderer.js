@@ -1,10 +1,5 @@
 /* global document, window */
-import { NO_POSITION } from './positions';
-
-function canvasRound(n) {
-  // eslint-disable-next-line no-bitwise
-  return (0.5 + n) << 0;
-}
+// import { NO_POSITION } from './positions';
 
 export default class Renderer {
   constructor() {
@@ -19,10 +14,11 @@ export default class Renderer {
     canvas.width = this.game.width;
     canvas.height = this.game.height;
     this.canvasContext = canvas.getContext('2d');
-    this.game.entities.forEach(e => this.entityMap.set(e.id, {
-      entity: e,
-      position: NO_POSITION,
-    }));
+    // this.game.entities.forEach(e => this.entityMap.set(e.id, {
+    //   entity: e,
+    //   position: NO_POSITION,
+    //   angle: 0,
+    // }));
     this.render = this.render.bind(this);
     this.render();
   }
@@ -40,44 +36,45 @@ export default class Renderer {
   }
 
   render() {
+    this.canvasContext.clearRect(0, 0, this.width, this.height);
     this.game.entities.forEach(e => this.drawEntity(e));
     window.requestAnimationFrame(this.render);
   }
 
   drawEntity(entity) {
-    const entityRendererData = this.entityMap.get(entity.id);
-    const prevPos = entityRendererData.position;
-    const pos = entity.position;
-    if (prevPos === pos) return;
-    entityRendererData.position = pos;
-    const size = entity.size;
-
-    this.borderDraw('clearRect', prevPos, size);
-    this.canvasContext.fillStyle = entity.color;
-    this.borderDraw('fillRect', pos, size);
-  }
-
-  borderDraw(ctxMethod, pos, size) {
+    // const entityRendererData = this.entityMap.get(entity.id);
+    const { canvas, angle, position } = entity;
+    const { x: xPos, y: yPos } = position;
     const ctx = this.canvasContext;
-    const xPos = canvasRound(pos.x);
-    const yPos = canvasRound(pos.y);
-    const { x: xSize, y: ySize } = size;
-    ctx[ctxMethod](xPos, yPos, xSize, ySize);
-
-    const xOverflow = xPos + xSize;
-    const yOverflow = yPos + ySize;
-    if (xOverflow > this.width) {
-      const x = (xOverflow % this.width) - xSize;
-      ctx[ctxMethod](x, yPos, xSize, ySize);
-    }
-    if (yOverflow > this.height) {
-      const y = (yOverflow % this.height) - ySize;
-      ctx[ctxMethod](xPos, y, xSize, ySize);
-    }
-    if (xOverflow > this.width && yOverflow > this.height) {
-      const x = (xOverflow % this.width) - xSize;
-      const y = (yOverflow % this.height) - ySize;
-      ctx[ctxMethod](x, y, xSize, ySize);
-    }
+    const drawXPos = -canvas.width / 2;
+    const drawYPos = -canvas.height / 2;
+    ctx.translate(xPos, yPos);
+    ctx.rotate(angle);
+    ctx.drawImage(canvas, drawXPos, drawYPos);
+    entity.squarePoints.forEach((point) => {
+      let x = xPos;
+      let y = yPos;
+      if (point.x > this.width) {
+        x -= this.width;
+      } else if (point.x < 0) {
+        x += this.width;
+      }
+      if (point.y > this.height) {
+        y -= this.height;
+      } else if (point.y < 0) {
+        y += this.height;
+      }
+      if (x !== xPos || y !== yPos) {
+        ctx.rotate(-angle);
+        ctx.translate(x - xPos, y - yPos);
+        ctx.rotate(angle);
+        ctx.drawImage(canvas, drawXPos, drawYPos);
+        ctx.rotate(-angle);
+        ctx.translate(-(x - xPos), -(y - yPos));
+        ctx.rotate(angle);
+      }
+    });
+    ctx.rotate(-angle);
+    ctx.translate(-xPos, -yPos);
   }
 }
