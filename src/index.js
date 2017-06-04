@@ -5,6 +5,8 @@ import Entity from './Entity';
 import Renderer from './Renderer';
 import Controls from './Controls';
 
+import './index.css';
+
 const game = new Game();
 
 const playerEntity = new Entity();
