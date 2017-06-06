@@ -10,12 +10,13 @@ const game = new Game();
 
 const controls1 = new Controls();
 const controls2 = new Controls({
-  FORWARD: 'w',
-  LEFT: 'a',
-  RIGHT: 'd',
+  FORWARD: 'KeyW',
+  LEFT: 'KeyA',
+  RIGHT: 'KeyD',
+  SHOOT: 'ShiftLeft',
 });
-controls1.setEntity(game.player1Entity);
-controls2.setEntity(game.player2Entity);
+controls1.setEntity(game.playersData[0].ship);
+controls2.setEntity(game.playersData[1].ship);
 
 const renderer = new Renderer();
 renderer.start(game);
@@ -23,6 +24,3 @@ renderer.start(game);
 game.start();
 
 document.body.appendChild(renderer.canvas);
-
-// window.p1 = player1Entity;
-// window.p2 = player2Entity;

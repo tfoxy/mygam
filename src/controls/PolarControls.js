@@ -21,6 +21,7 @@ const DEFAULT_KEY_BINDINGS = {
   FORWARD: 'ArrowUp',
   LEFT: 'ArrowLeft',
   RIGHT: 'ArrowRight',
+  SHOOT: 'Period',
 };
 
 export default class PolarControls {
@@ -41,15 +42,16 @@ export default class PolarControls {
   }
 
   keyboardListener(keyboardEvent) {
-    const { key, type } = keyboardEvent;
-    if (type === 'keydown' && !this.currentKeySet.has(key)) {
-      this.currentKeys.push(key);
-      this.currentKeySet.add(key);
-    } else if (type === 'keyup' && this.currentKeySet.delete(key)) {
-      const index = this.currentKeys.indexOf(key);
+    const { code, type } = keyboardEvent;
+    if (type === 'keydown' && !this.currentKeySet.has(code)) {
+      this.currentKeys.push(code);
+      this.currentKeySet.add(code);
+    } else if (type === 'keyup' && this.currentKeySet.delete(code)) {
+      const index = this.currentKeys.indexOf(code);
       this.currentKeys.splice(index, 1);
     }
     this.updateCurrentDirection();
+    this.updateShooting();
   }
 
   updateCurrentDirection() {
@@ -72,5 +74,14 @@ export default class PolarControls {
     const direction = MOVE_MAP[moveRadius + moveAngle];
     this.currentDirection = direction;
     this.entity.changeAcceleration(direction.r, direction.a);
+  }
+
+  updateShooting() {
+    const shooting = this.currentKeySet.has(this.keyBindings.SHOOT);
+    if (shooting) {
+      this.entity.startShooting();
+    } else {
+      this.entity.stopShooting();
+    }
   }
 }

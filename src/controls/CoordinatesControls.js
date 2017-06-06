@@ -1,6 +1,6 @@
 /* global window */
 import {
-  ZERO_POS,
+  NULL_VECTOR,
 } from '../positions';
 
 const SQRT2 = 1 / Math.sqrt(2);
@@ -30,7 +30,7 @@ const MOVE_MAP = {
   NE: UP_RIGHT,
   SW: DOWN_LEFT,
   SE: DOWN_RIGHT,
-  XX: ZERO_POS,
+  XX: NULL_VECTOR,
 };
 
 export default class CoordinatesControls {
@@ -39,7 +39,7 @@ export default class CoordinatesControls {
     this.entity = null;
     this.currentKeys = [];
     this.currentKeySet = new Set();
-    this.currentDirection = ZERO_POS;
+    this.currentDirection = NULL_VECTOR;
     this.keyboardListener = this.keyboardListener.bind(this);
   }
 

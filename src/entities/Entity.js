@@ -1,30 +1,26 @@
-/* global document */
-import { ZERO_POS, NO_POSITION } from './positions';
-
-
+import { NULL_VECTOR, NAN_VECTOR } from '../vectors';
 
 let nextId = 0;
-export default class Entity {
 
-  constructor(options) {
+export default class Entity {
+  constructor() {
     nextId += 1;
     this.id = nextId;
     this.color = 'gray';
-    this.size = { x: 35, y: 25 };
-    this.position = NO_POSITION;
+    this.size = NAN_VECTOR;
+    this.position = NAN_VECTOR;
     this.angle = 0;
     this.resetMomentum();
     this.acceleration = 0;
     this.angularAcceleration = 0;
-    this.maxSpeed = 600;
-    this.maxAcceleration = 5;
-    this.maxAngularSpeed = Math.PI * (3 / 2);
-    this.maxAngularAcceleration = Math.PI / 24;
-    Object.assign(this, options);
+    this.maxSpeed = 0;
+    this.maxAcceleration = 0;
+    this.maxAngularSpeed = 0;
+    this.maxAngularAcceleration = 0;
   }
 
   resetMomentum() {
-    this.speed = ZERO_POS;
+    this.speed = NULL_VECTOR;
     this.angularSpeed = 0;
   }
 
@@ -76,21 +72,5 @@ export default class Entity {
 
   get squarePoints() {
     return this._getSquarePoints(this.position);
-  }
-
-  get canvas() {
-    let canvas = this._canvas;
-    if (!canvas) {
-      canvas = document.createElement('canvas');
-      const { x, y } = this.size;
-      canvas.width = x;
-      canvas.height = y;
-      const ctx = canvas.getContext('2d');
-      ctx.fillRect(0, 0, 5, y);
-      ctx.fillStyle = this.color;
-      ctx.fillRect(5, 0, x, y);
-      this._canvas = canvas;
-    }
-    return this._canvas;
   }
 }

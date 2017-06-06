@@ -9,6 +9,6 @@ body {
   display: flex;
 }
 canvas {
-  background: white;
+  background: black;
   margin: auto;
 }

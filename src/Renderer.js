@@ -1,5 +1,4 @@
 /* global document, window */
-// import { NO_POSITION } from './positions';
 
 export default class Renderer {
   constructor() {
@@ -14,11 +13,6 @@ export default class Renderer {
     canvas.width = this.game.width;
     canvas.height = this.game.height;
     this.canvasContext = canvas.getContext('2d');
-    // this.game.entities.forEach(e => this.entityMap.set(e.id, {
-    //   entity: e,
-    //   position: NO_POSITION,
-    //   angle: 0,
-    // }));
     this.render = this.render.bind(this);
     this.render();
   }
