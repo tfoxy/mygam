@@ -1,32 +1,24 @@
 /* global document, window */
 
 export default class Renderer {
-  constructor() {
-    this.canvasContext = null;
-    this.entityMap = new Map();
-  }
-
   start(game) {
     if (this.game) throw new Error('Renderer is already rendering a Game');
     this.game = game;
     const canvas = document.createElement('canvas');
-    canvas.width = this.game.width;
-    canvas.height = this.game.height;
+    canvas.width = Math.min(window.innerWidth, this.game.width * 2);
+    canvas.height = Math.min(window.innerHeight, this.game.height * 2);
+    this.canvas = canvas;
     this.canvasContext = canvas.getContext('2d');
     this.render = this.render.bind(this);
     this.render();
   }
 
-  get canvas() {
-    return this.canvasContext.canvas;
-  }
-
   get width() {
-    return this.game.width;
+    return this.canvas.width;
   }
 
   get height() {
-    return this.game.height;
+    return this.canvas.height;
   }
 
   render() {
@@ -36,39 +28,28 @@ export default class Renderer {
   }
 
   drawEntity(entity) {
-    // const entityRendererData = this.entityMap.get(entity.id);
-    const { canvas, angle, position } = entity;
-    const { x: xPos, y: yPos } = position;
+    const { canvas, angle, position: pos } = entity;
     const ctx = this.canvasContext;
-    const drawXPos = -canvas.width / 2;
-    const drawYPos = -canvas.height / 2;
-    ctx.translate(xPos, yPos);
-    ctx.rotate(angle);
-    ctx.drawImage(canvas, drawXPos, drawYPos);
-    entity.squarePoints.forEach((point) => {
-      let x = xPos;
-      let y = yPos;
-      if (point.x > this.width) {
-        x -= this.width;
-      } else if (point.x < 0) {
-        x += this.width;
-      }
-      if (point.y > this.height) {
-        y -= this.height;
-      } else if (point.y < 0) {
-        y += this.height;
-      }
-      if (x !== xPos || y !== yPos) {
-        ctx.rotate(-angle);
-        ctx.translate(x - xPos, y - yPos);
-        ctx.rotate(angle);
-        ctx.drawImage(canvas, drawXPos, drawYPos);
-        ctx.rotate(-angle);
-        ctx.translate(-(x - xPos), -(y - yPos));
-        ctx.rotate(angle);
-      }
+    const { width: gameWidth, height: gameHeight } = this.game;
+    const xPos = pos.x + ((this.width - gameWidth) / 2);
+    const yPos = pos.y + ((this.height - gameHeight) / 2);
+    const { x: xSize, y: ySize } = entity.size;
+    [
+      { x: xPos, y: yPos },
+      { x: xPos, y: yPos + gameHeight },
+      { x: xPos, y: yPos - gameHeight },
+      { x: xPos + gameWidth, y: yPos },
+      { x: xPos + gameWidth, y: yPos + gameHeight },
+      { x: xPos + gameWidth, y: yPos - gameHeight },
+      { x: xPos - gameWidth, y: yPos },
+      { x: xPos - gameWidth, y: yPos + gameHeight },
+      { x: xPos - gameWidth, y: yPos - gameHeight },
+    ].forEach(({ x, y }) => {
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.drawImage(canvas, -xSize / 2, -ySize / 2);
+      ctx.rotate(-angle);
+      ctx.translate(-x, -y);
     });
-    ctx.rotate(-angle);
-    ctx.translate(-xPos, -yPos);
   }
 }

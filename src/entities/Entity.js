@@ -29,27 +29,7 @@ export default class Entity {
     this.angularAcceleration = angle * this.maxAngularAcceleration;
   }
 
-  getSquarePointsInsideGame(width, height) {
-    const { x: xPos, y: yPos } = this.position;
-    let xOffset = width;
-    let yOffset = width;
-    if (xPos > width / 2) {
-      xOffset *= -1;
-    }
-    if (yPos > height / 2) {
-      yOffset *= -1;
-    }
-    const squarePoints = this.squarePoints;
-    const points = [
-      squarePoints,
-      squarePoints.map(p => ({ x: p.x + xOffset, y: p.y })),
-      squarePoints.map(p => ({ x: p.x, y: p.y + yOffset })),
-      squarePoints.map(p => ({ x: p.x + xOffset, y: p.y + yOffset })),
-    ];
-    return points;
-  }
-
-  _getSquarePoints(position) {
+  _getPolygonPoints(position) {
     const { x: xPos, y: yPos } = position;
     const { x: xSize, y: ySize } = this.size;
     const angle = this.angle;
@@ -70,7 +50,7 @@ export default class Entity {
     }];
   }
 
-  get squarePoints() {
-    return this._getSquarePoints(this.position);
+  get polygonPoints() {
+    return this._getPolygonPoints(this.position);
   }
 }

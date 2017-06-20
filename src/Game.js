@@ -2,6 +2,7 @@ import { Vector, Polygon, testPolygonPolygon } from 'sat';
 import { polarToCartesian, sumVectors } from './vectors';
 import Ship from './entities/Ship';
 import Shot from './entities/Shot';
+import GameMap from './GameMap';
 
 const PI2 = 2 * Math.PI;
 
@@ -14,11 +15,10 @@ function pull(array, item) {
 
 export default class Game {
   constructor() {
+    this.map = new GameMap();
     this.entities = [];
     this.tickrate = 128;
     this.loopInterval = 1000 / this.tickrate;
-    this.width = 640;
-    this.height = 640;
     this.playersData = [{
       ship: new Ship({ color: 'green' }),
       shot: new Shot(),
@@ -28,6 +28,14 @@ export default class Game {
       shot: new Shot(),
       score: 0,
     }];
+  }
+
+  get width() {
+    return this.map.width;
+  }
+
+  get height() {
+    return this.map.height;
   }
 
   start() {
@@ -108,7 +116,7 @@ export default class Game {
   }
 
   getEntitySatPolygonList(entity) {
-    return entity.getSquarePointsInsideGame(this.width, this.height).map(
+    return this.map.getEntityPolygons(entity).map(
       points => new Polygon(undefined, points.map(p => new Vector(p.x, p.y))),
     );
   }
