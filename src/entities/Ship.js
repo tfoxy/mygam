@@ -5,10 +5,12 @@ export default class Ship extends Entity {
   constructor(options) {
     super();
     this.size = { x: 35, y: 25 };
-    this.maxSpeed = 400;
-    this.maxAcceleration = 5;
-    this.maxAngularSpeed = Math.PI;
-    this.maxAngularAcceleration = Math.PI / 32;
+    // this.maxSpeed = 400;
+    this.maxAcceleration = 10;
+    // this.maxAngularSpeed = Math.PI;
+    this.maxAngularAcceleration = Math.PI / 24;
+    this.oppositionModule = 2;
+    this.angularOpposition = Math.PI;
     this.shooting = false;
     Object.assign(this, options);
   }

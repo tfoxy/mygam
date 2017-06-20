@@ -13,10 +13,12 @@ export default class Entity {
     this.resetMomentum();
     this.acceleration = 0;
     this.angularAcceleration = 0;
-    this.maxSpeed = 0;
+    // this.maxSpeed = 0;
     this.maxAcceleration = 0;
-    this.maxAngularSpeed = 0;
+    // this.maxAngularSpeed = 0;
     this.maxAngularAcceleration = 0;
+    this.oppositionModule = 0;
+    this.angularOpposition = 0;
   }
 
   resetMomentum() {

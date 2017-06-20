@@ -14,3 +14,7 @@ export function sumVectors(v1, v2) {
     y: v1.y + v2.y,
   };
 }
+
+export function vectorModule(v) {
+  return Math.sqrt((v.x * v.x) + (v.y * v.y));
+}

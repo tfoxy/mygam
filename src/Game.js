@@ -1,5 +1,5 @@
 import { Vector, Polygon, testPolygonPolygon } from 'sat';
-import { polarToCartesian, sumVectors } from './vectors';
+import { polarToCartesian, sumVectors, vectorModule } from './vectors';
 import Ship from './entities/Ship';
 import Shot from './entities/Shot';
 import GameMap from './GameMap';
@@ -22,11 +22,11 @@ export default class Game {
     this.playersData = [{
       ship: new Ship({ color: 'green' }),
       shot: new Shot(),
-      score: 0,
+      lives: 10,
     }, {
       ship: new Ship({ color: 'red' }),
       shot: new Shot(),
-      score: 0,
+      lives: 10,
     }];
   }
 
@@ -59,14 +59,14 @@ export default class Game {
     this.entities.length = 0;
     this.playersData.forEach(d => d.ship.resetMomentum());
     Object.assign(this.playersData[0].ship, {
-      position: { x: 50, y: 50 },
+      position: { x: this.width * (1 / 4), y: this.height * (1 / 4) },
       angle: 0,
     });
     Object.assign(this.playersData[1].ship, {
-      position: { x: this.width - 50, y: this.height - 50 },
+      position: { x: this.width * (3 / 4), y: this.height * (3 / 4) },
       angle: Math.PI,
     });
-    this.entities.push(...this.playersData.map(d => d.ship));
+    this.entities.push(...this.playersData.filter(d => d.lives > 0).map(d => d.ship));
   }
 
   makeShots() {
@@ -74,6 +74,7 @@ export default class Game {
       if (ship.shooting) {
         shot.maxSpeed = ship.maxSpeed * 1.5;
         shot.maxAcceleration = ship.maxAcceleration * 8;
+        shot.oppositionModule = ship.oppositionModule * 4;
         shot.position = sumVectors(ship.position, polarToCartesian(ship.size.x * 0.75, ship.angle));
         shot.angle = ship.angle;
         shot.speed = ship.speed;
@@ -101,13 +102,13 @@ export default class Game {
           pull(this.entities, cEntity);
           const data = this.playersData.find(d => d.ship === cEntity);
           if (data) {
-            data.score -= 1;
+            data.lives -= 1;
             restart = true;
           }
         });
         if (restart) {
           this.startRound();
-          console.log(...this.playersData.map(d => d.score));
+          console.log(...this.playersData.map(d => d.lives));
           return true;
         }
       }
@@ -149,30 +150,41 @@ export default class Game {
 
   accelerateEntity(entity) {
     const { acceleration, angularAcceleration } = entity;
-    if (angularAcceleration) {
-      const tickAngularAcceleration = angularAcceleration / this.tickrate;
-      let angularSpeed = entity.angularSpeed + tickAngularAcceleration;
-      const maxAngularSpeed = entity.maxAngularSpeed / this.tickrate;
-      if (angularSpeed > maxAngularSpeed) {
-        angularSpeed = maxAngularSpeed;
-      } else if (angularSpeed < -maxAngularSpeed) {
-        angularSpeed = -maxAngularSpeed;
-      }
+    let angularAccelerationSum = angularAcceleration;
+    angularAccelerationSum -= entity.angularOpposition * entity.angularSpeed;
+    if (angularAccelerationSum) {
+      const tickAngularAcceleration = angularAccelerationSum / this.tickrate;
+      const angularSpeed = entity.angularSpeed + tickAngularAcceleration;
+      // const maxAngularSpeed = entity.maxAngularSpeed / this.tickrate;
+      // if (angularSpeed > maxAngularSpeed) {
+      //   angularSpeed = maxAngularSpeed;
+      // } else if (angularSpeed < -maxAngularSpeed) {
+      //   angularSpeed = -maxAngularSpeed;
+      // }
       entity.angularSpeed = angularSpeed;
     }
     if (acceleration) {
       const tickAcceleration = acceleration / this.tickrate;
       const { speed, angle } = entity;
-      let x = speed.x + (Math.cos(angle) * tickAcceleration);
-      let y = speed.y + (Math.sin(angle) * tickAcceleration);
-      const speedModule = Math.sqrt((x * x) + (y * y));
-      const maxSpeed = entity.maxSpeed / this.tickrate;
-      if (speedModule > maxSpeed) {
-        const speedRatio = maxSpeed / speedModule;
-        x *= speedRatio;
-        y *= speedRatio;
-      }
-      entity.speed = { x, y };
+      const speedDiff = polarToCartesian(tickAcceleration, angle);
+      const newSpeed = sumVectors(speed, speedDiff);
+      // const speedModule = vectorModule(newSpeed);
+      // const maxSpeed = entity.maxSpeed / this.tickrate;
+      // if (speedModule > maxSpeed) {
+      //   const speedRatio = maxSpeed / speedModule;
+      //   newSpeed.x *= speedRatio;
+      //   newSpeed.y *= speedRatio;
+      // }
+      entity.speed = newSpeed;
+    }
+    if (entity.speed.x || entity.speed.y) {
+      const { speed, oppositionModule } = entity;
+      const speedModule = vectorModule(speed);
+      const oppositionAcceleration = oppositionModule * speedModule;
+      const tickAcceleration = oppositionAcceleration / this.tickrate;
+      const speedRatio = (speedModule - tickAcceleration) / speedModule;
+      const newSpeed = { x: speed.x * speedRatio, y: speed.y * speedRatio };
+      entity.speed = newSpeed;
     }
   }
 }
